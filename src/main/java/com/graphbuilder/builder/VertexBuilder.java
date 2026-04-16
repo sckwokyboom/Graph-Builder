@@ -337,18 +337,37 @@ public class VertexBuilder {
             return false;
         }
 
+        @Override
+        public boolean visit(SuperConstructorInvocation node) {
+            context.addVertex(SUPER, "super", node);
+            return true;
+        }
+
         // --- Helpers ---
         private boolean isConstructorTypeName(SimpleName node) {
             ASTNode current = node.getParent();
+            ASTNode typeRoot = current; // track the outermost Type node
             while (current instanceof Type) {
+                typeRoot = current;
                 current = current.getParent();
             }
-            return current instanceof ClassInstanceCreation;
+            if (!(current instanceof ClassInstanceCreation cic)) {
+                return false;
+            }
+            // Only the main constructor type name, not type arguments
+            return cic.getType() == typeRoot;
         }
 
         private boolean isLambdaParameter(IVariableBinding vb) {
             IMethodBinding method = vb.getDeclaringMethod();
-            return method != null && method.getDeclaringMember() != null;
+            if (method == null) return false;
+            // Walk up AST from the variable's declaration to check for LambdaExpression
+            ASTNode declaringNode = context.compilationUnit().findDeclaringNode(vb);
+            if (declaringNode != null) {
+                ASTNode parent = declaringNode.getParent();
+                return parent instanceof LambdaExpression;
+            }
+            return false;
         }
 
         private boolean isVariableReference(SimpleName node) {
