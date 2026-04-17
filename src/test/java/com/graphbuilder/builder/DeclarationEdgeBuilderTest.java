@@ -74,12 +74,14 @@ class DeclarationEdgeBuilderTest {
     }
 
     @Test
-    void formalParameter_methodToParamType() {
+    void formalParameter_methodToFirstParamTypeOnly() {
+        // Per reference spec: only the first parameter gets FORMAL_PARAM;
+        // subsequent parameters are chained via NEXT_DECLARATION.
         var ctx = buildGraph("class Foo { void m(String a, int b) {} }");
         assertTrue(hasEdge(ctx, METHOD_DECLARATION, "m", TYPE_IDENTIFIER, "String", FORMAL_PARAMETER),
-                "Expected FORMAL_PARAM from METHOD_DECL(m) to TYPE_ID(String)");
-        assertTrue(hasEdge(ctx, METHOD_DECLARATION, "m", TYPE_IDENTIFIER, "int", FORMAL_PARAMETER),
-                "Expected FORMAL_PARAM from METHOD_DECL(m) to TYPE_ID(int)");
+                "Expected FORMAL_PARAM from METHOD_DECL(m) to first param type TYPE_ID(String)");
+        assertFalse(hasEdge(ctx, METHOD_DECLARATION, "m", TYPE_IDENTIFIER, "int", FORMAL_PARAMETER),
+                "Must NOT have FORMAL_PARAM from METHOD_DECL(m) to non-first param type TYPE_ID(int)");
     }
 
     @Test

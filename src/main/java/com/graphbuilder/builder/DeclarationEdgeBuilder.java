@@ -112,10 +112,11 @@ public class DeclarationEdgeBuilder {
     }
 
     /**
-     * FORMAL_PARAMETER edges: METHOD_DECL -> each parameter's type vertex.
+     * FORMAL_PARAMETER edges: METHOD_DECL -> first parameter's type vertex only.
      *
-     * For each method, finds the method declaration vertex and links it to the
-     * first vertex within each parameter's source range (the type identifier).
+     * Only the first parameter gets a direct FORMAL_PARAMETER edge from the method declaration;
+     * subsequent parameters are reached via the NEXT_DECLARATION chain (PARAM_VAR_DECL -> next TYPE_ID).
+     * This matches the reference example's graph structure.
      */
     private void buildFormalParameterEdges(BuildContext context) {
         context.compilationUnit().accept(new ASTVisitor() {
@@ -127,11 +128,12 @@ public class DeclarationEdgeBuilder {
 
                 @SuppressWarnings("unchecked")
                 List<SingleVariableDeclaration> params = node.parameters();
-                for (SingleVariableDeclaration param : params) {
-                    ITokenVertex paramTypeVertex = context.firstVertexInRange(param);
-                    if (paramTypeVertex != null) {
-                        context.addEdge(methodVertex, paramTypeVertex, EdgeCategory.FORMAL_PARAMETER);
-                    }
+                if (params.isEmpty()) return true;
+
+                SingleVariableDeclaration firstParam = params.get(0);
+                ITokenVertex paramTypeVertex = context.firstVertexInRange(firstParam);
+                if (paramTypeVertex != null) {
+                    context.addEdge(methodVertex, paramTypeVertex, EdgeCategory.FORMAL_PARAMETER);
                 }
                 return true;
             }

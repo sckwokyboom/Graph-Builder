@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static com.graphbuilder.model.TokenVertexCategory.*;
 import static com.graphbuilder.model.EdgeCategory.*;
@@ -124,6 +125,23 @@ class GraphBuilderIntegrationTest {
 
     @Test void formalParamEdges() {
         assertTrue(hasEdge(METHOD_DECLARATION, "collect", TYPE_IDENTIFIER, "Path", FORMAL_PARAMETER));
+    }
+
+    @Test void formalParamOnlyForFirstParameter() {
+        // For collect(Path directory, int depth), METHOD_DECL should have FORMAL_PARAM
+        // only to Path (first), NOT to int (second — reached via NEXT_DECL chain).
+        boolean hasExtraEdge = graph.edges().stream().anyMatch(e ->
+            e.source().category() == METHOD_DECLARATION && e.source().value().equals("collect") &&
+            e.target().category() == TYPE_IDENTIFIER && e.target().value().equals("int") &&
+            e.category() == FORMAL_PARAMETER);
+        assertFalse(hasExtraEdge,
+            "METHOD_DECL(collect) must not have FORMAL_PARAM edge to the second parameter's type");
+    }
+
+    @Test void graphIsDag() {
+        List<ITokenVertex> cycle = GraphCycleDetector.findCycle(graph);
+        assertTrue(cycle.isEmpty(),
+            "Reference example must produce a DAG, but found cycle: " + cycle);
     }
 
     @Test void nextDeclEdges() {
