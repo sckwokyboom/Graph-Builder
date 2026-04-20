@@ -1,6 +1,9 @@
 package com.graphbuilder.model;
 
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class AsgGraphTest {
@@ -12,7 +15,7 @@ class AsgGraphTest {
         var v1 = new TokenVertex(1, TokenVertexCategory.CLASS_DECLARATION, "Foo", 6, 1, 6, "Test.java");
         graph.addVertex(v0);
         graph.addVertex(v1);
-        graph.addEdge(new AsgEdge(v0, v1, EdgeCategory.DECLARING));
+        graph.addEdge(v0, v1, EdgeCategory.DECLARING);
 
         assertEquals(2, graph.vertices().size());
         assertEquals(1, graph.edges().size());
@@ -34,5 +37,26 @@ class AsgGraphTest {
         assertEquals(2, inRange.size());
         assertEquals(v0, inRange.get(0));
         assertEquals(v1, inRange.get(1));
+    }
+
+    @Test
+    void outgoingOfFiltersByCategory() {
+        var graph = new AsgGraph();
+        var v0 = new TokenVertex(0, TokenVertexCategory.CLASS, "class", 0, 1, 0, "Test.java");
+        var v1 = new TokenVertex(1, TokenVertexCategory.CLASS_DECLARATION, "Foo", 6, 1, 6, "Test.java");
+        var v2 = new TokenVertex(2, TokenVertexCategory.PUBLIC, "public", 20, 2, 0, "Test.java");
+        graph.addVertex(v0);
+        graph.addVertex(v1);
+        graph.addVertex(v2);
+        graph.addEdge(v0, v1, EdgeCategory.DECLARING);
+        graph.addEdge(v0, v2, EdgeCategory.ATTRIBUTE);
+
+        List<AsgEdge> declaring = graph.outgoingOf(v0, EdgeCategory.DECLARING);
+        assertEquals(1, declaring.size());
+        assertEquals(v1, declaring.get(0).target());
+
+        List<AsgEdge> attribute = graph.outgoingOf(v0, EdgeCategory.ATTRIBUTE);
+        assertEquals(1, attribute.size());
+        assertEquals(v2, attribute.get(0).target());
     }
 }

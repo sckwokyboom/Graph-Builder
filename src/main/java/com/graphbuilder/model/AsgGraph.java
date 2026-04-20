@@ -10,6 +10,7 @@ import java.util.Map;
 public class AsgGraph extends DirectedAcyclicGraph<ITokenVertex, AsgEdge> {
 
     private final Map<Integer, ITokenVertex> byId = new HashMap<>();
+    private int edgeSequence = 0;
 
     public AsgGraph() {
         super(AsgEdge.class);
@@ -33,6 +34,9 @@ public class AsgGraph extends DirectedAcyclicGraph<ITokenVertex, AsgEdge> {
         AsgEdge edge = new AsgEdge(category);
         try {
             boolean added = super.addEdge(source, target, edge);
+            if (added) {
+                edge.setInsertionOrder(edgeSequence++);
+            }
             return added ? edge : null;
         } catch (IllegalArgumentException e) {
             // DirectedAcyclicGraph.CycleFoundException (subtype of IAE) on cycle.
@@ -75,16 +79,14 @@ public class AsgGraph extends DirectedAcyclicGraph<ITokenVertex, AsgEdge> {
     }
 
     /**
-     * Compatibility shim: returns edges in a deterministic order
-     * (by source id, target id, category code) — jgrapht's {@link #edgeSet()} has no order guarantee.
+     * Compatibility shim: returns edges in insertion order — matches the original ArrayList-backed
+     * AsgGraph behaviour so that the DOT golden output is stable.
+     * jgrapht's {@link #edgeSet()} has no order guarantee, so each edge records its sequence number
+     * at insertion time.
      */
     public List<AsgEdge> edges() {
         return edgeSet().stream()
-            .sorted(
-                Comparator
-                    .<AsgEdge>comparingInt(e -> e.source().id())
-                    .thenComparingInt(e -> e.target().id())
-                    .thenComparingInt(e -> e.category().code()))
+            .sorted(Comparator.comparingInt(AsgEdge::insertionOrder))
             .toList();
     }
 }

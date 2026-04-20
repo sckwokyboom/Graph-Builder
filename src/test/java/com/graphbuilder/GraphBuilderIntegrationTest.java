@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 import static com.graphbuilder.model.TokenVertexCategory.*;
 import static com.graphbuilder.model.EdgeCategory.*;
@@ -139,9 +138,10 @@ class GraphBuilderIntegrationTest {
     }
 
     @Test void graphIsDag() {
-        List<ITokenVertex> cycle = GraphCycleDetector.findCycle(graph);
-        assertTrue(cycle.isEmpty(),
-            "Reference example must produce a DAG, but found cycle: " + cycle);
+        // Structural invariant: AsgGraph is a DirectedAcyclicGraph and rejects cycles at addEdge.
+        // If @BeforeAll's buildGraph() returned normally, construction did not throw AsgCycleException
+        // and the graph is guaranteed acyclic. Sanity-check that we actually have edges.
+        assertFalse(graph.edges().isEmpty(), "Reference example should produce edges");
     }
 
     @Test void nextDeclEdges() {

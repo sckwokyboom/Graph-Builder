@@ -13,7 +13,7 @@ class DotExporterTest {
         var v1 = new TokenVertex(1, TokenVertexCategory.CLASS_DECLARATION, "Foo", 6, 1, 6, "Test.java");
         graph.addVertex(v0);
         graph.addVertex(v1);
-        graph.addEdge(new AsgEdge(v0, v1, EdgeCategory.DECLARING));
+        graph.addEdge(v0, v1, EdgeCategory.DECLARING);
 
         var exporter = new DotExporter();
         String dot = exporter.export(graph);
