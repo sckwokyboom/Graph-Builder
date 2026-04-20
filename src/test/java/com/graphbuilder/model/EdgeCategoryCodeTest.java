@@ -29,4 +29,12 @@ class EdgeCategoryCodeTest {
         // and its code is the contract the Python-side tensor exporter will rely on.
         assertEquals(1, EdgeCategory.ASSIGN.code());
     }
+
+    @Test
+    void syntaxLinkHasStableCodeTwenty() {
+        // Pinned as the last-variant anchor: together with ASSIGN==1, this detects
+        // silent renumbering of any variant in between (e.g. if someone adds a
+        // new variant and shuffles the existing codes).
+        assertEquals(20, EdgeCategory.SYNTAX_LINK.code());
+    }
 }
