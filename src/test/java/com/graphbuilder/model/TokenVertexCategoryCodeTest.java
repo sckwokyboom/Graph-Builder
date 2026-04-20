@@ -22,4 +22,17 @@ class TokenVertexCategoryCodeTest {
                 "Duplicate code " + c.code() + " on " + c.name());
         }
     }
+
+    @Test
+    void annotationDeclarationHasStableCodeOne() {
+        // First-variant anchor for the Python tensor exporter contract.
+        assertEquals(1, TokenVertexCategory.ANNOTATION_DECLARATION.code());
+    }
+
+    @Test
+    void volatileHasStableCodeNinetyEight() {
+        // Last-variant anchor: together with ANNOTATION_DECLARATION==1, detects
+        // silent renumbering of any variant in between.
+        assertEquals(98, TokenVertexCategory.VOLATILE.code());
+    }
 }
