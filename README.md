@@ -61,6 +61,9 @@ python scripts/load_matrix.py graph.csv
 
 # Heatmap colored by edge category, with vertex labels on both axes.
 python scripts/visualize_matrix.py graph.csv -o graph.png
+
+# Collapse edge categories to a plain 0/1 adjacency matrix.
+python scripts/binarize_matrix.py graph.csv -o graph.bin.csv
 ```
 
 Minimal loader, if you'd rather write your own:
