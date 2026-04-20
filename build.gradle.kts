@@ -30,6 +30,8 @@ dependencies {
     implementation("org.eclipse.platform:org.eclipse.core.jobs:3.15.300")
     implementation("org.eclipse.platform:org.eclipse.text:3.14.100")
 
+    implementation("org.jgrapht:jgrapht-core:1.5.2")
+
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
