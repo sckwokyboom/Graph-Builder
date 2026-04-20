@@ -1,6 +1,7 @@
 package com.graphbuilder.model;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.graph.GraphCycleProhibitedException;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -28,9 +29,16 @@ public class AsgGraph extends DirectedAcyclicGraph<ITokenVertex, AsgEdge> {
     /**
      * Adds a categorized edge. Returns the inserted edge, or null if an edge
      * between source and target already existed. Throws {@link AsgCycleException}
-     * if the edge would introduce a cycle.
+     * if the edge would introduce a cycle (including self-loops).
      */
     public AsgEdge addEdge(ITokenVertex source, ITokenVertex target, EdgeCategory category) {
+        // Check for self-loop upfront. A self-loop is semantically a cycle;
+        // we throw AsgCycleException with domain context rather than relying on
+        // jgrapht's error message wording (which could change).
+        if (source.equals(target)) {
+            throw new AsgCycleException(source, target, category,
+                new IllegalArgumentException("self-loop"));
+        }
         AsgEdge edge = new AsgEdge(category);
         try {
             boolean added = super.addEdge(source, target, edge);
@@ -38,10 +46,11 @@ public class AsgGraph extends DirectedAcyclicGraph<ITokenVertex, AsgEdge> {
                 edge.setInsertionOrder(edgeSequence++);
             }
             return added ? edge : null;
-        } catch (IllegalArgumentException e) {
-            // DirectedAcyclicGraph.CycleFoundException (subtype of IAE) on cycle.
+        } catch (GraphCycleProhibitedException e) {
+            // DirectedAcyclicGraph.addEdge throws GraphCycleProhibitedException when the edge would create a cycle.
             throw new AsgCycleException(source, target, category, e);
         }
+        // Other IllegalArgumentExceptions (e.g., "no such vertex in graph") propagate as-is.
     }
 
     public ITokenVertex vertexById(int id) {

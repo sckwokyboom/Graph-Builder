@@ -58,4 +58,26 @@ class AsgGraphCycleRejectionTest {
 
         assertEquals(4, graph.edges().size());
     }
+
+    @Test
+    void addingEdgeForMissingVertexDoesNotPretendToBeACycle() {
+        var graph = new AsgGraph();
+        var a = new TokenVertex(0, TokenVertexCategory.CLASS_DECLARATION, "A", 0, 1, 0, "T.java");
+        var b = new TokenVertex(1, TokenVertexCategory.CLASS_DECLARATION, "B", 5, 1, 5, "T.java");
+        graph.addVertex(a);
+        // deliberately NOT adding b
+
+        // jgrapht throws IllegalArgumentException (not a cycle) when an endpoint is missing.
+        // We must propagate that as-is, not wrap it as AsgCycleException.
+        assertThrows(IllegalArgumentException.class,
+            () -> graph.addEdge(a, b, EdgeCategory.NEXT_TOKEN));
+        // And it must NOT be an AsgCycleException — that would be a misleading diagnosis.
+        try {
+            graph.addEdge(a, b, EdgeCategory.NEXT_TOKEN);
+        } catch (AsgCycleException misleading) {
+            fail("Missing-vertex error must not be reported as a cycle: " + misleading.getMessage());
+        } catch (IllegalArgumentException expected) {
+            // good
+        }
+    }
 }
