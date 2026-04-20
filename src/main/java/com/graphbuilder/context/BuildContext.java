@@ -67,7 +67,7 @@ public class BuildContext {
 
     public void addEdge(ITokenVertex source, ITokenVertex target, EdgeCategory category) {
         if (source != null && target != null) {
-            graph.addEdge(new AsgEdge(source, target, category));
+            graph.addEdge(source, target, category);
         }
     }
 }
