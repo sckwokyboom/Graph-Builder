@@ -1,6 +1,7 @@
 package com.graphbuilder.cli;
 
 import com.graphbuilder.GraphBuilder;
+import com.graphbuilder.export.AdjacencyMatrixExporter;
 import com.graphbuilder.export.DotExporter;
 import com.graphbuilder.model.AsgGraph;
 
@@ -13,16 +14,19 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.err.println("Usage: graph-builder <file.java|directory> [-o output.dot]");
+            System.err.println("Usage: graph-builder <file.java|directory> [-o output.dot] [-m matrix.csv]");
             System.exit(1);
         }
 
         List<Path> inputFiles = new ArrayList<>();
-        Path outputFile = null;
+        Path dotOutput = null;
+        Path matrixOutput = null;
 
         for (int i = 0; i < args.length; i++) {
             if ("-o".equals(args[i]) && i + 1 < args.length) {
-                outputFile = Path.of(args[++i]);
+                dotOutput = Path.of(args[++i]);
+            } else if ("-m".equals(args[i]) && i + 1 < args.length) {
+                matrixOutput = Path.of(args[++i]);
             } else {
                 Path path = Path.of(args[i]);
                 if (Files.isDirectory(path)) {
@@ -47,12 +51,19 @@ public class Main {
         try {
             var builder = new GraphBuilder();
             AsgGraph graph = builder.buildFromFiles(inputFiles);
-            var exporter = new DotExporter();
-            if (outputFile != null) {
-                exporter.exportToFile(graph, outputFile);
-                System.out.println("Graph written to " + outputFile);
-            } else {
-                System.out.println(exporter.export(graph));
+
+            if (matrixOutput != null) {
+                new AdjacencyMatrixExporter().exportToFile(graph, matrixOutput);
+                Path legend = AdjacencyMatrixExporter.legendPathFor(matrixOutput);
+                System.out.println("Matrix written to " + matrixOutput + " (legend at " + legend + ")");
+            }
+
+            var dotExporter = new DotExporter();
+            if (dotOutput != null) {
+                dotExporter.exportToFile(graph, dotOutput);
+                System.out.println("Graph written to " + dotOutput);
+            } else if (matrixOutput == null) {
+                System.out.println(dotExporter.export(graph));
             }
         } catch (IOException e) {
             System.err.println("Error: " + e.getMessage());
