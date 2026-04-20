@@ -49,7 +49,21 @@ Edge-category codes are declared in
 `NEXT_ANCESTOR=15`, `OPERATION=16`, `STATEMENT=17`, `TYPE_ONTOLOGY=18`,
 `VARIABLE_ONTOLOGY=19`, `SYNTAX_LINK=20`.
 
-### Loading the matrix in Python
+### Loading and visualizing in Python
+
+Two small helpers live under [`scripts/`](scripts):
+
+```bash
+pip install -r scripts/requirements.txt
+
+# Print shape, density, and the first few edges with their categories.
+python scripts/load_matrix.py graph.csv
+
+# Heatmap colored by edge category, with vertex labels on both axes.
+python scripts/visualize_matrix.py graph.csv -o graph.png
+```
+
+Minimal loader, if you'd rather write your own:
 
 ```python
 import numpy as np
